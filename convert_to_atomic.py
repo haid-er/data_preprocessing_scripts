@@ -15,7 +15,8 @@ selected_activities = {
     "standing": True,
     "talk_using_phone": True,
     "typing": True,
-    "walking": True
+    "walking": True,
+    "clean_the_table": True,
 }
 
 # -------------------------------------------------------------------
@@ -128,7 +129,7 @@ def process_dataset(base_directory):
 # Main function: prompt for base dataset folder and process it.
 # -------------------------------------------------------------------
 def main():
-    base_directory = input("Enter the base dataset folder path (e.g. F:\\ServerData\\StructuredDataSet): ").strip()
+    base_directory = input("Enter the base dataset folder path (e.g. F:\\ServerData\\SynchronizedData): ").strip()
     if not os.path.exists(base_directory):
         print("Directory does not exist.")
         return
