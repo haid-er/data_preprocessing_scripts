@@ -17,6 +17,8 @@ selected_activities = {
     "typing": True,
     "walking": True,
     "clean_the_table": True,
+    "downstairs": True,
+    "upstairs": True,
 }
 
 # -------------------------------------------------------------------

@@ -1,17 +1,18 @@
 import os
+import shutil
 import pandas as pd
+
+# ------------------------------------------------------------
+# Define the selected activities list
+# ------------------------------------------------------------
+selected_activities = ["sitting", "walking", "jogging", "slow_walk", "clean_the_table", "downstairs", "fast_walk", "slow_walk", "laying", "reading", "standing", "talk_using_phone", "typing", "upstair"]  # Modify as needed
 
 # ------------------------------------------------------------
 # Function: Compute synchronization bounds for a given folder
 # ------------------------------------------------------------
 def get_synchronization_bounds_for_folder(folder_path):
     """
-    For all CSV files in folder_path (with no header, comma-delimited, first column is timestamp),
-    compute the overlapping time window as:
-       late_start = maximum of all file start timestamps, and
-       early_finish = minimum of all file end timestamps.
-    Returns a tuple (late_start, early_finish) or (None, None) if no valid files
-    or if no overlapping interval exists.
+    Compute the overlapping time window for CSV files in a folder.
     """
     late_start = None
     early_finish = None
@@ -21,11 +22,9 @@ def get_synchronization_bounds_for_folder(folder_path):
         if file.lower().endswith('.csv'):
             file_path = os.path.join(folder_path, file)
             try:
-                # Read CSV file (no header, comma as delimiter)
                 df = pd.read_csv(file_path, header=None, delimiter=',')
                 if df.empty:
                     continue
-                # Convert the first column to numeric
                 df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
                 if df.iloc[:, 0].isnull().all():
                     continue
@@ -54,9 +53,7 @@ def get_synchronization_bounds_for_folder(folder_path):
 # ------------------------------------------------------------
 def slice_and_save_files_for_folder(folder_path, bounds, base_directory, output_directory):
     """
-    For every CSV file in folder_path, slice rows whose first-column timestamp is
-    between late_start and early_finish (bounds), and save the new file in the output_directory
-    while preserving the relative folder structure.
+    Slice CSV files within the computed synchronization bounds and save them.
     """
     if bounds[0] is None or bounds[1] is None:
         print(f"Skipping folder {folder_path} due to invalid bounds.")
@@ -74,40 +71,63 @@ def slice_and_save_files_for_folder(folder_path, bounds, base_directory, output_
                 df = pd.read_csv(file_path, header=None, delimiter=',')
                 if df.empty:
                     continue
-                # Convert first column to numeric
                 df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
-                # Slice rows based on the common time window
                 sliced_df = df[(df.iloc[:, 0] >= late_start) & (df.iloc[:, 0] <= early_finish)]
                 new_file_path = os.path.join(new_folder, file)
-                # Save without header to preserve original file format
                 sliced_df.to_csv(new_file_path, index=False, header=False, sep=',')
                 print(f"Synchronized file saved: {new_file_path}")
             except Exception as e:
                 print(f"Error processing file {file_path}: {e}")
 
 # ------------------------------------------------------------
-# Function: Process entire dataset (subject/activity hierarchy)
+# Function: Copy unselected activity folders
 # ------------------------------------------------------------
-def process_dataset(base_directory, output_directory):
+def copy_folder_contents(src_folder, dest_folder):
     """
-    Traverse the dataset hierarchy (subjects and their activity folders).
-    For each activity folder, compute the synchronization bounds and slice each CSV file accordingly.
-    Synchronized files are saved to output_directory while preserving the original folder structure.
+    Copy all files from the source folder to the destination folder.
+    """
+    os.makedirs(dest_folder, exist_ok=True)
+    for file in os.listdir(src_folder):
+        src_file = os.path.join(src_folder, file)
+        dest_file = os.path.join(dest_folder, file)
+        if os.path.isfile(src_file):
+            shutil.copy2(src_file, dest_file)
+            print(f"Copied: {src_file} -> {dest_file}")
+
+# ------------------------------------------------------------
+# Function: Process selected and unselected activities
+# ------------------------------------------------------------
+def process_activities(base_directory, output_directory):
+    """
+    Process only the selected activities for synchronization, 
+    and copy unselected activities without modification.
     """
     for subject in os.listdir(base_directory):
         subject_path = os.path.join(base_directory, subject)
-        if os.path.isdir(subject_path):
-            print(f"\nProcessing subject: {subject}")
-            for activity in os.listdir(subject_path):
-                activity_path = os.path.join(subject_path, activity)
-                if os.path.isdir(activity_path):
-                    print(f"  Activity: {activity}")
-                    bounds = get_synchronization_bounds_for_folder(activity_path)
-                    if bounds[0] is not None and bounds[1] is not None:
-                        print(f"    Synchronization bounds: {bounds}")
-                        slice_and_save_files_for_folder(activity_path, bounds, base_directory, output_directory)
-                    else:
-                        print(f"    Skipping activity '{activity}' due to invalid or missing bounds.")
+        if not os.path.isdir(subject_path):
+            continue  # Skip if not a directory
+        
+        print(f"\nProcessing subject: {subject}")
+        subject_output_path = os.path.join(output_directory, subject)
+        os.makedirs(subject_output_path, exist_ok=True)
+
+        for activity in os.listdir(subject_path):
+            activity_path = os.path.join(subject_path, activity)
+            if not os.path.isdir(activity_path):
+                continue  # Skip non-folder items
+            
+            new_activity_path = os.path.join(subject_output_path, activity)
+            if activity in selected_activities:
+                print(f"  Synchronizing activity: {activity}")
+                bounds = get_synchronization_bounds_for_folder(activity_path)
+                if bounds[0] is not None and bounds[1] is not None:
+                    print(f"    Synchronization bounds: {bounds}")
+                    slice_and_save_files_for_folder(activity_path, bounds, base_directory, output_directory)
+                else:
+                    print(f"    Skipping activity '{activity}' due to invalid or missing bounds.")
+            else:
+                print(f"  Copying unselected activity: {activity}")
+                copy_folder_contents(activity_path, new_activity_path)
 
 # ------------------------------------------------------------
 # Main function
@@ -122,7 +142,7 @@ def main():
         print("No output folder provided. Exiting.")
         return
     os.makedirs(output_directory, exist_ok=True)
-    process_dataset(base_directory, output_directory)
+    process_activities(base_directory, output_directory)
 
 if __name__ == "__main__":
     main()
