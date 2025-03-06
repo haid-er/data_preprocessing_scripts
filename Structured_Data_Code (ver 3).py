@@ -31,17 +31,15 @@ def get_activities_for_subject(base_path, subject, existing_devices):
     activities = sorted(set.union(*activity_sets))  # Use union to get all activities for the subject
     return activities
 
-def clean_filename(file_name):
-    """Remove redundant patterns like '_eX.csv_eX.csv'."""
-    # Regular expression to match patterns like '_eX.csv_eX.csv'
-    cleaned_name = re.sub(r'(_e\d+\.csv)_e\d+\.csv$', r'\1', file_name)
-    return cleaned_name
-
 def rename_file(file_name, device):
     """Rename CSV files based on device and sensor type without including the subject name."""
+    # Remove "Smart_" from the device name
     device_name = device.replace("Smart_", "").lower()
+    
+    # Split the file name by underscores and spaces to extract sensor type and extra info
     parts = re.split(r'[_ ]', file_name)
     
+    # Handle different formats
     sensor_type = ""
     extra_info = ""
     sequence = ""
@@ -51,56 +49,113 @@ def rename_file(file_name, device):
             sensor_type = parts[1].lower()
             if sensor_type == "gravity":
                 sensor_type = "gravity_sensor"
+            sequence = ""
             new_name = f"{device_name}_{sensor_type}"
         elif len(parts) >= 3:
             sensor_type = parts[1].lower()
             extra_info = parts[2].lower()
+            
+            # Extract the sequence number
             for part in reversed(parts):
                 if part.startswith('e'):
                     sequence = part[1:]
                     break
-            new_name = f"{device_name}_{sensor_type}_{extra_info}_e{sequence}" if sequence else f"{device_name}_{sensor_type}_{extra_info}"
+            
+            # Construct the new file name
+            if sequence:
+                new_name = f"{device_name}_{sensor_type}_{extra_info}_e{sequence}"
+            else:
+                new_name = f"{device_name}_{sensor_type}_{extra_info}"
         else:
             new_name = f"{device_name}_{file_name}"
     else:
-        if len(parts) >= 4:
+        if len(parts) >= 4:  # Check if there are enough parts
             sensor_type = parts[2].lower().replace(" ", "_")
             extra_info = parts[3].lower().replace(" ", "_")
+            
+            # Extract the sequence number
             for part in reversed(parts):
                 if part.startswith('e'):
                     sequence = part[1:]
                     break
-            new_name = f"{device_name}_{sensor_type}_{extra_info}_e{sequence}" if sequence else f"{device_name}_{sensor_type}_{extra_info}"
-        elif len(parts) >= 3:
+            
+            # Construct the new file name
+            if sequence:
+                new_name = f"{device_name}_{sensor_type}_{extra_info}_e{sequence}"
+            else:
+                new_name = f"{device_name}_{sensor_type}_{extra_info}"
+        elif len(parts) >= 3:  # If there's only a sensor type
             sensor_type = parts[2].lower().replace(" ", "_")
+            
+            # Extract the sequence number
             for part in reversed(parts):
                 if part.startswith('e'):
                     sequence = part[1:]
                     break
-            new_name = f"{device_name}_{sensor_type}_e{sequence}" if sequence else f"{device_name}_{sensor_type}"
-        else:
+            
+            # Construct the new file name
+            if sequence:
+                new_name = f"{device_name}_{sensor_type}_e{sequence}"
+            else:
+                new_name = f"{device_name}_{sensor_type}"
+        else:  # If the file name structure is unexpected
             new_name = f"{device_name}_{file_name}"
     
+    # Use regular expression to extract sensor name
     sensor_names = ["accelerometer", "gyroscope", "magnetometer", "linear acceleration", "gravity", "magnetic", "acceleration"]
     for sensor_name in sensor_names:
         match = re.search(sensor_name, file_name, re.IGNORECASE)
         if match:
-            new_name = new_name.replace(sensor_type, sensor_name.lower().replace(" ", "_")) if sensor_type else f"{device_name}_{sensor_name.lower().replace(' ', '_')}"
+            if sensor_type:  # Check if sensor_type is defined
+                new_name = new_name.replace(sensor_type, sensor_name.lower().replace(" ", "_"))
+            else:
+                new_name = f"{device_name}_{sensor_name.lower().replace(' ', '_')}"
             break
-
+    
+    # Handle "magnetic field" and "uncalibrated" cases
     if "magnetic field" in file_name.lower():
         new_name = new_name.replace("magnetic_field", "magnetometer")
     if "gravity_sensor" in file_name.lower():
         new_name = new_name.replace("gravity_sensor", "gravity")
+    if "magnetic" in file_name.lower():
+        new_name = new_name.replace("magnetic", "magnetometer")
+    if "acceleration" in file_name.lower():
+        new_name = new_name.replace("acceleration", "accelerometer")
+    if "linear_accelerometer_acceleration" in new_name:
+        new_name = new_name.replace("linear_accelerometer_acceleration", "linear_accelerometer")
+    if "linear_accelerometer_accelerometer" in new_name:
+        new_name = new_name.replace("linear_accelerometer_accelerometer", "linear_accelerometer")
+    if "magnetometer uncalibrated" in new_name:
+        new_name = new_name.replace("magnetometer uncalibrated", "magnetometer_uncalibrated")
+    elif "uncalibrated" in new_name:
+        new_name = new_name.replace("uncalibrated", "uncalibrated")
+    
+    # Handle "linear acceleration" to "linear_accelerometer"
     if "linear_acceleration" in new_name:
         new_name = new_name.replace("linear_acceleration", "linear_accelerometer")
-
-    new_name = clean_filename(new_name)
-
-    if not new_name.endswith(".csv"):
-        new_name += ".csv"
+    
+    # Handle "gravity" to "gravity_sensor"
+    if "gravity" in new_name:
+        new_name = new_name.replace("gravity", "gravity_sensor")
+    
+    # Remove "sensor" from the file name if not needed
+    if "gravity_sensor" in new_name:
+        pass
+    else:
+        new_name = new_name.replace("_sensor", "").replace("sensor_", "").replace("sensor", "")
+    
+    # Remove any extra .csv if present
+    if new_name.endswith(".csv"):
+        new_name = new_name[:-4]
+    
+    # Remove any extra _eX after .csv
+    if ".csv" in new_name:
+        parts = new_name.split(".csv")
+        if len(parts) > 1 and parts[1].startswith("_e"):
+            new_name = parts[0]
     
     return new_name
+
 
 def copy_files(base_path, subject, activities, save_path, existing_devices):
     """Copy and rename CSV files while maintaining the correct structure."""
@@ -117,6 +172,9 @@ def copy_files(base_path, subject, activities, save_path, existing_devices):
                 for file in os.listdir(old_activity_path):
                     if file.endswith('.csv'):
                         new_file_name = rename_file(file, device)
+                        # Add .csv extension if it's missing
+                        if not new_file_name.endswith('.csv'):
+                            new_file_name += '.csv'
                         shutil.copy(os.path.join(old_activity_path, file), os.path.join(activity_folder, new_file_name))
         print(f"CSV files copied successfully for activity '{activity}'!")
 
@@ -136,7 +194,7 @@ def create_hierarchy(base_path, subjects, save_path, existing_devices):
                 selected_activities = activities
                 break
             elif activity_choice in [a.lower() for a in activities]:
-                selected_activities = [a for a in activities if a.lower() == activity_choice]
+                selected_activities = [a for a in activities if a.lower() == activity_choice][0]
                 break
             else:
                 print("Invalid activity. Please choose from the list.")
@@ -173,8 +231,9 @@ def main():
             print("Invalid subject. Please choose from the list.")
     
     save_path = input("Enter the path where you want to save the structured data: ").strip()
-    os.makedirs(save_path, exist_ok=True)
-
+    while not os.path.exists(save_path):
+        os.makedirs(save_path, exist_ok=True)
+    
     create_hierarchy(base_path, selected_subjects, save_path, existing_devices)
 
 if __name__ == "__main__":
