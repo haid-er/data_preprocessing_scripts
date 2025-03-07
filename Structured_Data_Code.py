@@ -4,8 +4,8 @@ import re
 
 def get_existing_devices(base_path):
     """Get the list of existing device folders within the dataset path."""
-    devices = ['Smart_Phone', 'Smart_Glass', 'Smart_Watch']
-    existing_devices = [device for device in devices if os.path.exists(os.path.join(base_path, device))]
+    devices = {'Smart_Phone': 'phone', 'Smart_Glass': 'glass', 'Smart_Watch': 'watch'}
+    existing_devices = {device: short_name for device, short_name in devices.items() if os.path.exists(os.path.join(base_path, device))}
     return existing_devices
 
 def get_common_subjects(base_path, existing_devices):
@@ -28,132 +28,59 @@ def get_activities_for_subject(base_path, subject, existing_devices):
     activity_sets = [set(os.listdir(os.path.join(base_path, device, subject))) for device in existing_devices if os.path.exists(os.path.join(base_path, device, subject))]
     if not activity_sets:
         return []
-    activities = sorted(set.union(*activity_sets))  # Use union to get all activities for the subject
+    activities = sorted(set.union(*activity_sets))
     return activities
+
+import re
+
+import re
 
 def rename_file(file_name, device):
     """Rename CSV files based on device and sensor type without including the subject name."""
-    # Remove "Smart_" from the device name
     device_name = device.replace("Smart_", "").lower()
+
+    # Remove any leading subject ID (generic pattern: letters/numbers + _ or -)
+    file_name = re.sub(r'^[a-zA-Z0-9]+[_-]+', '', file_name, flags=re.IGNORECASE)
     
-    # Split the file name by underscores and spaces to extract sensor type and extra info
-    parts = re.split(r'[_ ]', file_name)
-    
-    # Handle different formats
-    sensor_type = ""
-    extra_info = ""
-    sequence = ""
-    
-    if device == "Smart_Glass":
-        if len(parts) == 2 and parts[1].lower() in ["gyroscope", "magnetometer", "gravity"]:
-            sensor_type = parts[1].lower()
-            if sensor_type == "gravity":
-                sensor_type = "gravity_sensor"
-            sequence = ""
-            new_name = f"{device_name}_{sensor_type}"
-        elif len(parts) >= 3:
-            sensor_type = parts[1].lower()
-            extra_info = parts[2].lower()
-            
-            # Extract the sequence number
-            for part in reversed(parts):
-                if part.startswith('e'):
-                    sequence = part[1:]
-                    break
-            
-            # Construct the new file name
-            if sequence:
-                new_name = f"{device_name}_{sensor_type}_{extra_info}_e{sequence}"
-            else:
-                new_name = f"{device_name}_{sensor_type}_{extra_info}"
-        else:
-            new_name = f"{device_name}_{file_name}"
-    else:
-        if len(parts) >= 4:  # Check if there are enough parts
-            sensor_type = parts[2].lower().replace(" ", "_")
-            extra_info = parts[3].lower().replace(" ", "_")
-            
-            # Extract the sequence number
-            for part in reversed(parts):
-                if part.startswith('e'):
-                    sequence = part[1:]
-                    break
-            
-            # Construct the new file name
-            if sequence:
-                new_name = f"{device_name}_{sensor_type}_{extra_info}_e{sequence}"
-            else:
-                new_name = f"{device_name}_{sensor_type}_{extra_info}"
-        elif len(parts) >= 3:  # If there's only a sensor type
-            sensor_type = parts[2].lower().replace(" ", "_")
-            
-            # Extract the sequence number
-            for part in reversed(parts):
-                if part.startswith('e'):
-                    sequence = part[1:]
-                    break
-            
-            # Construct the new file name
-            if sequence:
-                new_name = f"{device_name}_{sensor_type}_e{sequence}"
-            else:
-                new_name = f"{device_name}_{sensor_type}"
-        else:  # If the file name structure is unexpected
-            new_name = f"{device_name}_{file_name}"
-    
-    # Use regular expression to extract sensor name
-    sensor_names = ["accelerometer", "gyroscope", "magnetometer", "linear acceleration", "gravity", "magnetic", "acceleration"]
-    for sensor_name in sensor_names:
-        match = re.search(sensor_name, file_name, re.IGNORECASE)
-        if match:
-            if sensor_type:  # Check if sensor_type is defined
-                new_name = new_name.replace(sensor_type, sensor_name.lower().replace(" ", "_"))
-            else:
-                new_name = f"{device_name}_{sensor_name.lower().replace(' ', '_')}"
-            break
-    
-    # Handle "magnetic field" and "uncalibrated" cases
-    if "magnetic field" in file_name.lower():
-        new_name = new_name.replace("magnetic_field", "magnetometer")
-    if "gravity_sensor" in file_name.lower():
-        new_name = new_name.replace("gravity_sensor", "gravity")
-    if "magnetic" in file_name.lower():
-        new_name = new_name.replace("magnetic", "magnetometer")
-    if "acceleration" in file_name.lower():
-        new_name = new_name.replace("acceleration", "accelerometer")
-    if "linear_accelerometer_acceleration" in new_name:
-        new_name = new_name.replace("linear_accelerometer_acceleration", "linear_accelerometer")
-    if "linear_accelerometer_accelerometer" in new_name:
-        new_name = new_name.replace("linear_accelerometer_accelerometer", "linear_accelerometer")
-    if "magnetometer uncalibrated" in new_name:
-        new_name = new_name.replace("magnetometer uncalibrated", "magnetometer_uncalibrated")
-    elif "uncalibrated" in new_name:
-        new_name = new_name.replace("uncalibrated", "uncalibrated")
-    
-    # Handle "linear acceleration" to "linear_accelerometer"
-    if "linear_acceleration" in new_name:
-        new_name = new_name.replace("linear_acceleration", "linear_accelerometer")
-    
-    # Handle "gravity" to "gravity_sensor"
-    if "gravity" in new_name:
-        new_name = new_name.replace("gravity", "gravity_sensor")
-    
-    # Remove "sensor" from the file name if not needed
-    if "gravity_sensor" in new_name:
-        pass
-    else:
-        new_name = new_name.replace("_sensor", "").replace("sensor_", "").replace("sensor", "")
-    
-    # Remove any extra .csv if present
-    if new_name.endswith(".csv"):
-        new_name = new_name[:-4]
-    
-    # Remove any extra _eX after .csv
-    if ".csv" in new_name:
-        parts = new_name.split(".csv")
-        if len(parts) > 1 and parts[1].startswith("_e"):
-            new_name = parts[0]
-    
+    # Remove "Samsung" from the filename
+    file_name = re.sub(r'\bSamsung\b', '', file_name, flags=re.IGNORECASE).strip()
+
+    # Sensor name mappings
+    sensor_mappings = {
+        # Smartphone Sensors
+        r"AK09916C Magnetic field Sensor": "magnetometer",
+        r"AK09916C Magnetic Sensor UnCalibrated": "magnetometer_uncalibrated",
+        r"Gravity Sensor": "gravity",
+        r"Interrupt Gyroscope Sensor": "interrupt_gyroscope",
+        r"Linear Acceleration Sensor": "linear_acceleration",
+        r"LSM6DSL Acceleration Sensor UnCalibrated": "accelerometer",
+        r"LSM6DSL Acceleration Sensor": "accelerometer_calibrated",
+        r"LSM6DSL Gyroscope sensor UnCalibrated": "gyroscope_uncalibrated",
+        r"LSM6DSL Gyroscope Sensor": "gyroscope",
+        # Smartwatch Sensors
+        r"AK09918C Magnetometer UnCalibrated": "magnetometer_uncalibrated",
+        r"AK09918C Magnetometer": "magnetometer",
+        r"LSM6DSO Accelerometer": "accelerometer",
+        r"LSM6DSO Gyroscope Uncalibrated": "gyroscope_uncalibrated",
+        r"LSM6DSO Gyroscope": "gyroscope",
+        r"Samsung Linear Acceleration Sensor": "linear_acceleration",
+        # Smartglass Sensors
+        r"ACCELEROMETER": "accelerometer",
+        r"GYROSCOPE": "gyroscope",
+        r"Magnetometer": "magnetometer"
+    }
+
+    # Apply sensor name replacements (case-insensitive)
+    for key, value in sensor_mappings.items():
+        file_name = re.sub(key, value, file_name, flags=re.IGNORECASE)
+
+    # Ensure consistent formatting
+    new_name = f"{device_name}_{file_name}".replace(" ", "_")
+
+    # Ensure .csv extension
+    if not new_name.endswith(".csv"):
+        new_name += ".csv"
+
     return new_name
 
 
@@ -166,15 +93,12 @@ def copy_files(base_path, subject, activities, save_path, existing_devices):
         activity_folder = os.path.join(subject_folder, activity)
         os.makedirs(activity_folder, exist_ok=True)
         
-        for device in existing_devices:
+        for device, short_device in existing_devices.items():
             old_activity_path = os.path.join(base_path, device, subject, activity)
             if os.path.exists(old_activity_path):
                 for file in os.listdir(old_activity_path):
                     if file.endswith('.csv'):
                         new_file_name = rename_file(file, device)
-                        # Add .csv extension if it's missing
-                        if not new_file_name.endswith('.csv'):
-                            new_file_name += '.csv'
                         shutil.copy(os.path.join(old_activity_path, file), os.path.join(activity_folder, new_file_name))
         print(f"CSV files copied successfully for activity '{activity}'!")
 
@@ -187,8 +111,8 @@ def create_hierarchy(base_path, subjects, save_path, existing_devices):
             continue
         
         while True:
-            print("Available activities for subject '{}':".format(subject), activities + ["ALL"])
-            activity_choice = input("Enter the activity name from the list or type 'ALL' to copy all activities for subject '{}': ".format(subject)).strip().lower()
+            print(f"Available activities for subject '{subject}':", activities + ["ALL"])
+            activity_choice = input(f"Enter an activity name or 'ALL' to copy all for '{subject}': ").strip().lower()
             
             if activity_choice == "all":
                 selected_activities = activities
@@ -219,7 +143,7 @@ def main():
     
     while True:
         print("Available subjects:", list(original_subjects.values()) + ["ALL"])
-        subject_input = input("Enter the subject ID from the list or type 'ALL' to select all subjects: ").strip().lower()
+        subject_input = input("Enter a subject ID or 'ALL' to select all: ").strip().lower()
         
         if subject_input == "all":
             selected_subjects = list(original_subjects.values())
@@ -230,9 +154,8 @@ def main():
         else:
             print("Invalid subject. Please choose from the list.")
     
-    save_path = input("Enter the path where you want to save the structured data: ").strip()
-    while not os.path.exists(save_path):
-        os.makedirs(save_path, exist_ok=True)
+    save_path = input("Enter the path to save structured data: ").strip()
+    os.makedirs(save_path, exist_ok=True)
     
     create_hierarchy(base_path, selected_subjects, save_path, existing_devices)
 
