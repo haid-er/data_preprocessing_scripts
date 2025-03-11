@@ -100,6 +100,10 @@ def main():
     dest_dir = input("Enter the destination path for plotted graphs: ").strip()
     os.makedirs(dest_dir, exist_ok=True)
 
+    # Prompt for the event numbers to plot (e.g., 0,1,2)
+    event_num_input = input("Enter the event numbers to plot (comma-separated, e.g., 0,1,2): ").strip()
+    event_to_plot = [int(num) for num in event_num_input.split(',')]
+
     # Traverse the hierarchy to collect event files by sensor
     file_groups = {}  # Dictionary to store files grouped by (subject, activity, sensor)
 
@@ -111,10 +115,12 @@ def main():
                 if None in (subject, activity, sensor, event_num):
                     continue
 
-                key = (subject, activity, sensor)
-                if key not in file_groups:
-                    file_groups[key] = []
-                file_groups[key].append(file_path)
+                # Only include files with the specified event numbers
+                if event_num in event_to_plot:
+                    key = (subject, activity, sensor)
+                    if key not in file_groups:
+                        file_groups[key] = []
+                    file_groups[key].append(file_path)
 
     # Process each group of files and plot
     for key, file_paths in file_groups.items():
