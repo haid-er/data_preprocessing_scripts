@@ -53,7 +53,7 @@ def load_sensor_data(filepath):
                 print(f"Error processing row {row}: {e}")
                 continue
                 
-    return timestamps, x_vals, y_vals, z_vals
+    return timestamps[:500], x_vals[:500], y_vals[:500], z_vals[:500]
 
 def plot_sensor_data(timestamps, x_vals, y_vals, z_vals,filepath):
     """
