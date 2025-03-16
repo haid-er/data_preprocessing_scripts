@@ -5,7 +5,7 @@ import pandas as pd
 # ------------------------------------------------------------
 # Define the selected activities list
 # ------------------------------------------------------------
-selected_activities = ["sitting", "walking", "jogging", "slow_walk", "clean_the_table", "downstairs", "fast_walk", "slow_walk", "laying", "reading", "standing", "talk_using_phone", "typing", "upstair"]  # Modify as needed
+selected_activities = ["sitting", "walking", "jogging", "slow_walk", "clean_the_table", "downstairs", "fast_walk", "laying", "reading", "standing", "talk_using_phone", "typing", "upstairs"]  # Modify as needed
 
 # ------------------------------------------------------------
 # Function: Compute synchronization bounds for a given folder
