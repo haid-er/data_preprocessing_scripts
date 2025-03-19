@@ -5,7 +5,7 @@ import pandas as pd
 # ------------------------------------------------------------
 # Define the selected activities list
 # ------------------------------------------------------------
-selected_activities = ["sitting", "walking", "jogging", "slow_walk", "clean_the_table", "downstairs", "fast_walk", "laying", "reading", "standing", "talk_using_phone", "typing", "upstairs"]  # Modify as needed
+selected_activities = ["sitting", "walking", "jogging", "slow_walk", "clean_the_table", "downstairs", "quick_walk", "laying", "reading", "standing", "talk_using_phone", "typing", "upstairs"]  # Modify as needed
 
 # ------------------------------------------------------------
 # Function: Compute synchronization bounds for a given folder
@@ -17,7 +17,7 @@ def get_synchronization_bounds_for_folder(folder_path):
     late_start = None
     early_finish = None
     valid_file_found = False
-    
+    file_path = None
     for file in os.listdir(folder_path):
         if file.lower().endswith('.csv'):
             file_path = os.path.join(folder_path, file)
@@ -28,8 +28,8 @@ def get_synchronization_bounds_for_folder(folder_path):
                 df.iloc[:, 0] = pd.to_numeric(df.iloc[:, 0], errors='coerce')
                 if df.iloc[:, 0].isnull().all():
                     continue
-                file_start = df.iloc[:, 0].min()
-                file_end = df.iloc[:, 0].max()
+                file_start = df.iloc[:, 0][0]
+                file_end = df.iloc[:, 0][len(df) - 1]
                 if pd.isnull(file_start) or pd.isnull(file_end):
                     continue
                 valid_file_found = True
@@ -42,9 +42,10 @@ def get_synchronization_bounds_for_folder(folder_path):
                 print(f"Error processing file {file_path}: {e}")
     
     if not valid_file_found:
+        print(f"No valid CSV files found in folder: {folder_path}")
         return None, None
     if late_start > early_finish:
-        print(f"No overlapping interval in folder: {folder_path}")
+        print(f"No overlapping interval in folder: {file_path}")
         return None, None
     return late_start, early_finish
 
@@ -103,6 +104,8 @@ def process_activities(base_directory, output_directory):
     and copy unselected activities without modification.
     """
     for subject in os.listdir(base_directory):
+        if subject != "BCSF24M501":
+            continue
         subject_path = os.path.join(base_directory, subject)
         if not os.path.isdir(subject_path):
             continue  # Skip if not a directory
@@ -125,6 +128,7 @@ def process_activities(base_directory, output_directory):
                     slice_and_save_files_for_folder(activity_path, bounds, base_directory, output_directory)
                 else:
                     print(f"    Skipping activity '{activity}' due to invalid or missing bounds.")
+                    print(activity_path)
             else:
                 print(f"  Copying unselected activity: {activity}")
                 copy_folder_contents(activity_path, new_activity_path)

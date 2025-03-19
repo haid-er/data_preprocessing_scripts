@@ -7,18 +7,19 @@ import pandas as pd
 # -------------------------------------------------------------------
 selected_activities = {
     "fast_walk": True,
-    "jogging": True,
-    "laying": True,
-    "reading": True,
-    "sitting": True,
-    "slow_walk": True,
-    "standing": True,
-    "talk_using_phone": True,
-    "typing": True,
-    "walking": True,
-    "clean_the_table": True,
-    "downstairs": True,
-    "upstairs": True,
+    # "quick_walk": True,
+    # "jogging": True,
+    # "laying": True,
+    # "reading": True,
+    # "sitting": True,
+    # "slow_walk": True,
+    # "standing": True,
+    # "talk_using_phone": True,
+    # "typing": True,
+    # "walking": True,
+    # "clean_the_table": True,
+    # "downstairs": True,
+    # "upstairs": True,
 }
 
 # -------------------------------------------------------------------
