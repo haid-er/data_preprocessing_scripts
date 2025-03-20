@@ -63,3 +63,57 @@ Can be used to verify duration and total values of collected data after syncing 
     - final fixed 4 second atomic activity
 
 Note: Other files are just used for verification of data. Each file accept the path till base folder which have three devices folders.
+
+## standard activity names
+
+    - bending
+    - walking
+    - standing_up_from_sitting
+    - sitting_down_from_standing
+    - slow_walk
+    - squatting
+    - open_door
+    - close_door
+    - quick_walk
+    - sitting
+    - put_on_floor
+    - pick_from_floor
+    - laying_down_from_sitting
+    - standing_up_from_laying
+    - typing
+    - jogging
+    - clean_the_table
+    - open_bag
+    - open_big_box
+    - reading
+    - close_lid_by_rotation
+    - plugin
+    - throw_out
+    - laying
+    - eat_small_things
+    - talk_using_phone
+    - standing
+    - upstairs
+    - downstairs
+    - drink_water
+    - fall_forward
+    - fall_right
+    - fall_backward
+    - fall_left
+    - fall_forward_when_trying_to_sit_down
+    - fall_backward_while_trying_to_sit_down
+    - fall_forward_while_trying_to_stand_up
+    - fall_backward_while_trying_to_stand_up
+
+### Three Minute activities
+
+    - quick_walk
+    - jogging
+    - laying
+    - reading
+    - sitting
+    - slow_walk
+    - standing
+    - talk_using_phone
+    - typing
+    - walking
