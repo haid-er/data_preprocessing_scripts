@@ -5,7 +5,20 @@ import pandas as pd
 # ------------------------------------------------------------
 # Define the selected activities list
 # ------------------------------------------------------------
-selected_activities = ["sitting", "walking", "jogging", "slow_walk", "clean_the_table", "downstairs", "quick_walk", "laying", "reading", "standing", "talk_using_phone", "typing", "upstairs"]  # Modify as needed
+selected_activities = ["sitting", 
+                       "walking", 
+                       "jogging", 
+                       "slow_walk", 
+                       "clean_the_table", 
+                    #    "downstairs", 
+                       "quick_walk", 
+                       "laying", 
+                       "reading", 
+                       "standing", 
+                       "talk_using_phone", 
+                       "typing", 
+                    #    "upstairs",
+                       ]  # Modify as needed
 
 # ------------------------------------------------------------
 # Function: Compute synchronization bounds for a given folder
@@ -104,8 +117,6 @@ def process_activities(base_directory, output_directory):
     and copy unselected activities without modification.
     """
     for subject in os.listdir(base_directory):
-        if subject != "BCSF24M501":
-            continue
         subject_path = os.path.join(base_directory, subject)
         if not os.path.isdir(subject_path):
             continue  # Skip if not a directory

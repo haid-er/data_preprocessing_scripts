@@ -112,7 +112,8 @@ def create_hierarchy(base_path, subjects, save_path, existing_devices):
         
         while True:
             print(f"Available activities for subject '{subject}':", activities + ["ALL"])
-            activity_choice = input(f"Enter an activity name or 'ALL' to copy all for '{subject}': ").strip().lower()
+            # activity_choice = input(f"Enter an activity name or 'ALL' to copy all for '{subject}': ").strip().lower()
+            activity_choice = "all"
             
             if activity_choice == "all":
                 selected_activities = activities

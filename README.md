@@ -56,6 +56,7 @@ Can be used to verify duration and total values of collected data after syncing 
 
 ## Complete Sequence of running scripts for preprocessing
 
+    - standardize activity names
     - Delete Last Row
     - Structured Data Code
     - sync
@@ -117,3 +118,4 @@ Note: Other files are just used for verification of data. Each file accept the p
     - talk_using_phone
     - typing
     - walking
+    - clean_the_table
