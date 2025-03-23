@@ -2,7 +2,6 @@ import os
 import re
 import glob
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 
 def clean_filename(file_name):
@@ -32,7 +31,7 @@ def parse_file_info(file_path, base_path):
     filename = os.path.basename(file_path)
     match = re.search(r'^(.*)_e0*(\d+)\.csv$', filename, re.IGNORECASE)
     if match:
-        sensor = match.group(1)  # e.g., 'watch_magnetometer_uncalibrated' or 'watch_accelerometer'
+        sensor = match.group(1)  # e.g., 'watch_magnetometer' or 'watch_accelerometer'
         event_num = int(match.group(2))
     else:
         sensor, event_num = None, None
@@ -62,14 +61,14 @@ def load_sensor_data(file_path):
         df.columns = ['x', 'y', 'z']
     return df
 
-def plot_comparison_graph(base_file, other_files, sensor_keyword, subject_base, event_base, activity, dest_file):
+def plot_comparison_graph(base_file, comp_files, sensor_keyword, subject_base, base_event, activity, dest_file):
     """
     Plot the comparison graph.
     
-    Loads the base_file and each file from other_files (a list of tuples (subject, event, file_path)),
+    Loads the base_file and each file from comp_files (a list of tuples (subject, event, file_path)),
     extracts the 'x' column data from each file, and plots them on a single graph.
     
-    The base file is labeled as '{subject_base}_e{event_base} (base)' and each other file is labeled as
+    The base file is labeled as '{subject_base}_e{base_event} (base)' and each other file is labeled as
     '{subject}_e{event}'. The graph title includes the sensor keyword and activity.
     
     The final graph is saved as a PNG file at dest_file.
@@ -81,10 +80,10 @@ def plot_comparison_graph(base_file, other_files, sensor_keyword, subject_base, 
     if df_base is None:
         print(f"Could not load base file: {base_file}")
         return
-    plt.plot(df_base['x'].values, label=f"{subject_base}_e{event_base} (base)")
+    plt.plot(df_base['x'].values, label=f"{subject_base}_e{base_event} (base)")
     
-    # Plot data for each other subject event file
-    for subj, ev, fpath in other_files:
+    # Plot data for each compared subject event file
+    for subj, ev, fpath in comp_files:
         df = load_sensor_data(fpath)
         if df is not None:
             plt.plot(df['x'].values, label=f"{subj}_e{ev}")
@@ -111,66 +110,99 @@ def find_event_file(base_path, subject, activity, sensor_keyword, event_number):
     for f in files:
         fbase = os.path.basename(f)
         fclean = clean_filename(fbase)
-        if sensor_keyword.lower() in fclean.lower():
+        # Extract sensor using parse_file_info
+        _, _, sensor, _ = parse_file_info(f, base_path)
+        # Compare sensor exactly
+        if sensor and sensor.lower() == sensor_keyword.lower():
             match = re.search(r'_e0*(\d+)\.csv$', fclean, re.IGNORECASE)
             if match and int(match.group(1)) == event_number:
                 return f
     return None
 
 def main():
-    # Prompt for the source structured data folder
-    base_path = input("Enter the path to the structured data folder: ").strip()
+    # Get the source dataset folder and destination folder for plots.
+    base_path = input("Enter the path to the structured dataset folder: ").strip()
     while not os.path.exists(base_path):
         print("Path does not exist.")
-        base_path = input("Enter the path to the structured data folder: ").strip()
+        base_path = input("Enter the path to the structured dataset folder: ").strip()
+        
+    dest_base = input("Enter the destination folder for plotted graphs: ").strip()
+    os.makedirs(dest_base, exist_ok=True)
     
-    # Prompt for base subject, activity, sensor keyword, and base event number
+    # Get base subject and its base event number.
     subject_base = input("Enter the BASE subject ID (e.g., BITF21M541): ").strip()
-    activity = input("Enter the activity (e.g., walking): ").strip()
-    sensor_keyword = input("Enter the sensor keyword (e.g., watch_gyroscope): ").strip()
     try:
-        event_base = int(input(f"Enter the BASE event number for subject {subject_base}: ").strip())
+        base_event = int(input(f"Enter the BASE event number for subject {subject_base}: ").strip())
     except Exception as e:
         print("Invalid event number. Exiting.")
         return
+
+    # Get the list of compared subject IDs (comma-separated)
+    compared_subjects_input = input("Enter the other subject IDs to compare (comma-separated): ").strip()
+    compared_subjects = [s.strip() for s in compared_subjects_input.split(",") if s.strip()]
     
-    # Find the base event file for the base subject
-    base_file = find_event_file(base_path, subject_base, activity, sensor_keyword, event_base)
-    if base_file is None:
-        print(f"Base file not found for {subject_base} in activity {activity} with sensor {sensor_keyword} and event {event_base}.")
+    # Get the event numbers (comma-separated) to search for in the compared subjects.
+    event_nums_input = input("Enter event numbers for the compared subjects (comma-separated, e.g., 1,2,3): ").strip()
+    try:
+        compared_events = [int(num.strip()) for num in event_nums_input.split(",") if num.strip()]
+    except Exception as e:
+        print("Invalid event numbers input. Exiting.")
         return
-    
-    # Prompt for other subjects to compare (comma-separated list)
-    other_subjects_input = input("Enter other subject IDs to compare (comma-separated): ").strip()
-    other_subjects = [s.strip() for s in other_subjects_input.split(",") if s.strip()]
-    
-    # For each other subject, prompt for the event number to use and find the corresponding file
-    other_subjects_events = []  # list of tuples: (subject, event, file_path)
-    for subj in other_subjects:
-        try:
-            ev = int(input(f"Enter event number for subject {subj}: ").strip())
-        except Exception as e:
-            print(f"Invalid event number for subject {subj}. Skipping.")
-            continue
-        file_path = find_event_file(base_path, subj, activity, sensor_keyword, ev)
-        if file_path:
-            other_subjects_events.append((subj, ev, file_path))
-        else:
-            print(f"File not found for subject {subj} with event {ev}.")
-    
-    if not other_subjects_events:
-        print("No comparison files found. Exiting.")
+
+    # Get the list of activities from the base subject folder.
+    base_subject_path = os.path.join(base_path, subject_base)
+    if not os.path.isdir(base_subject_path):
+        print(f"Base subject folder {subject_base} not found in dataset. Exiting.")
         return
-    
-    # Prompt for destination folder to save the comparison graph
-    dest_dir = input("Enter the destination folder for the comparison graph: ").strip()
-    os.makedirs(dest_dir, exist_ok=True)
-    
-    # Create a destination file name using base subject, sensor, base event, and activity
-    dest_file = os.path.join(dest_dir, f"{subject_base}_{sensor_keyword}_e{event_base}_{activity}_comparison.png")
-    
-    # Plot the comparison graph using the base file and other subject event files
-    plot_comparison_graph(base_file, other_subjects_events, sensor_keyword, subject_base, event_base, activity, dest_file)
+
+    activities = [a for a in os.listdir(base_subject_path) if os.path.isdir(os.path.join(base_subject_path, a))]
+    if not activities:
+        print(f"No activity folders found for base subject {subject_base}. Exiting.")
+        return
+
+    # Process each activity from the base subject.
+    for activity in activities:
+        base_activity_path = os.path.join(base_subject_path, activity)
+        base_files = glob.glob(os.path.join(base_activity_path, "*.csv"))
+        
+        # For each sensor file in the base subject that has the given base event number,
+        # compare it with the corresponding file(s) from each compared subject.
+        for bf in base_files:
+            subj, act, sensor, ev = parse_file_info(bf, base_path)
+            if ev != base_event or sensor is None:
+                continue  # Only process files matching the base event number
+            
+            base_file = bf  # The file for base subject for this sensor and activity.
+            sensor_keyword = sensor  # Using the sensor name as the keyword.
+            print(f"Processing activity '{activity}', sensor '{sensor_keyword}' for base subject {subject_base} event {base_event}")
+
+            # For each compared subject, check if the activity folder exists.
+            for comp_subj in compared_subjects:
+                comp_activity_path = os.path.join(base_path, comp_subj, activity)
+                if not os.path.isdir(comp_activity_path):
+                    print(f"Activity folder '{activity}' not found for subject {comp_subj}. Skipping.")
+                    continue
+
+                # For the current compared subject, gather files matching any of the specified event numbers.
+                comparison_files = []
+                for comp_ev in compared_events:
+                    comp_file = find_event_file(base_path, comp_subj, activity, sensor_keyword, comp_ev)
+                    if comp_file:
+                        comparison_files.append((comp_subj, comp_ev, comp_file))
+                    else:
+                        print(f"File not found for subject {comp_subj} in activity {activity} for sensor '{sensor_keyword}' with event {comp_ev}.")
+                
+                # If we found at least one comparison file for this compared subject, plot the graph.
+                if comparison_files:
+                    # Destination: dest_base/comp_subj/activity/
+                    dest_folder = os.path.join(dest_base, comp_subj, activity)
+                    os.makedirs(dest_folder, exist_ok=True)
+                    dest_file = os.path.join(dest_folder, f"{subject_base}_{sensor_keyword}_e{base_event}_vs_{comp_subj}_{sensor_keyword}.png")
+                    plot_comparison_graph(base_file, comparison_files, sensor_keyword, subject_base, base_event, activity, dest_file)
+                else:
+                    print(f"No comparison files found for subject {comp_subj} in activity {activity} for sensor '{sensor_keyword}'.")
+                
+    print("Processing complete.")
 
 if __name__ == "__main__":
     main()

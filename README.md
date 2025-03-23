@@ -56,6 +56,7 @@ Can be used to verify duration and total values of collected data after syncing 
 
 ## Complete Sequence of running scripts for preprocessing
 
+    - standardize subject name
     - standardize activity names
     - Delete Last Row
     - Structured Data Code

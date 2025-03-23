@@ -6,18 +6,17 @@ import pandas as pd
 # Only folders whose name (lowercase) is in this dictionary will be processed.
 # -------------------------------------------------------------------
 selected_activities = {
-    "fast_walk": True,
-    # "quick_walk": True,
-    # "jogging": True,
-    # "laying": True,
-    # "reading": True,
-    # "sitting": True,
-    # "slow_walk": True,
-    # "standing": True,
-    # "talk_using_phone": True,
-    # "typing": True,
-    # "walking": True,
-    # "clean_the_table": True,
+    "quick_walk": True,
+    "jogging": True,
+    "laying": True,
+    "reading": True,
+    "sitting": True,
+    "slow_walk": True,
+    "standing": True,
+    "talk_using_phone": True,
+    "typing": True,
+    "walking": True,
+    "clean_the_table": True,
     # "downstairs": True,
     # "upstairs": True,
 }
@@ -89,7 +88,7 @@ def split_file_into_events(file_path, event_duration_ms=5000):
         except Exception as e:
             print(f"Error saving file {new_file_path}: {e}")
 
-    # If at least one event file was created, delete the original file
+    # If at least one event file was created, delete the original fil
     if events_created > 0:
         try:
             os.remove(file_path)
