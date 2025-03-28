@@ -10,14 +10,14 @@ selected_activities = ["sitting",
                        "jogging", 
                        "slow_walk", 
                        "clean_the_table", 
-                    #    "downstairs", 
+                       "downstairs", 
                        "quick_walk", 
                        "laying", 
                        "reading", 
                        "standing", 
                        "talk_using_phone", 
                        "typing", 
-                    #    "upstairs",
+                       "upstairs",
                        ]  # Modify as needed
 
 # ------------------------------------------------------------
