@@ -32,7 +32,7 @@ selected_activities = {
 # The event files are saved in the same folder as the original file.
 # After successful splitting, the original (large) file is deleted.
 # -------------------------------------------------------------------
-def split_file_into_events(file_path, event_duration_ms=5000):
+def split_file_into_events(file_path, event_duration_ms=500):
     try:
         # Read the CSV file (no header, comma-delimited)
         df = pd.read_csv(file_path, header=None, delimiter=',')
