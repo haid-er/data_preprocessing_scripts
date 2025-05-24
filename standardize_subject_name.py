@@ -4,7 +4,7 @@ def is_standard_subject(name):
     """
     Returns True if the subject folder name is a single word without spaces or underscores.
     """
-    return " " not in name and "_" not in name
+    return name.islower() and " " not in name and "_" not in name
 
 def rename_subjects(base_path):
     """
@@ -27,10 +27,10 @@ def rename_subjects(base_path):
 
             subject_path = os.path.join(device_path, subject)
             print(f"\nSubject folder '{subject}' in device '{device}' is not standardized.")
-            new_subject = input("Enter the new subject name (a single word, e.g., bitf21m541): ").strip()
+            new_subject = input("Enter the new subject name (a single word in lowercase, e.g., bitf21m541): ").strip().lower()
             while not is_standard_subject(new_subject):
                 print("Invalid subject name. It must be a single word without spaces or underscores.")
-                new_subject = input("Enter the new subject name: ").strip()
+                new_subject = input("Enter the new subject name: ").strip().lower()
 
             new_subject_path = os.path.join(device_path, new_subject)
             
