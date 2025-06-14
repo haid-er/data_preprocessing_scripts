@@ -33,7 +33,7 @@ def traverse_and_count(directory):
 
 def main():
     # Replace this with the path to your HAR_DATA folder
-    base_directory = "F:\ServerData"
+    base_directory = r"C:\Users\Malik Haider\Documents\HUMCARE\MPHIL Students Collected Data\DS"
     counts = traverse_and_count(base_directory)
     
     # for folder, count in counts.items():

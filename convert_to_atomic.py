@@ -32,7 +32,7 @@ selected_activities = {
 # The event files are saved in the same folder as the original file.
 # After successful splitting, the original (large) file is deleted.
 # -------------------------------------------------------------------
-def split_file_into_events(file_path, event_duration_ms=500):
+def split_file_into_events(file_path, event_duration_ms=5000):
     try:
         # Read the CSV file (no header, comma-delimited)
         df = pd.read_csv(file_path, header=None, delimiter=',')
@@ -60,7 +60,7 @@ def split_file_into_events(file_path, event_duration_ms=500):
     total_duration = end_ts - start_ts
 
     if total_duration < 10000:
-        print(f"File {file_path} duration ({total_duration} ms) is less than 10 seconds. Skipping splitting.")
+        # print(f"File {file_path} duration ({total_duration} ms) is less than 10 seconds. Skipping splitting.")
         return
 
     # Calculate the number of full events (each event_duration_ms long)
@@ -83,7 +83,7 @@ def split_file_into_events(file_path, event_duration_ms=500):
         new_file_path = os.path.join(folder, new_file_name)
         try:
             event_df.to_csv(new_file_path, index=False, header=False, sep=',')
-            print(f"Saved {new_file_path} (Event {i}, Duration: {event_duration_ms} ms, Rows: {len(event_df)})")
+            # print(f"Saved {new_file_path} (Event {i}, Duration: {event_duration_ms} ms, Rows: {len(event_df)})")
             events_created += 1
         except Exception as e:
             print(f"Error saving file {new_file_path}: {e}")

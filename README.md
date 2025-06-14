@@ -61,7 +61,9 @@ Can be used to verify duration and total values of collected data after syncing 
     - Delete Last Row
     - Structured Data Code
     - sync
+    - upstair downstair issue resolution
     - convert to atomic
+    - rename files
     - final fixed 4 second atomic activity
 
 Note: Other files are just used for verification of data. Each file accept the path till base folder which have three devices folders.
