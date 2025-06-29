@@ -2,12 +2,21 @@ import os
 
 # Define renaming rules (modify as needed)
 rename_mapping = {
-    "downstair": "downstairs",
-    "sitting_down_from_standing": "sit_down",
-    "sitting_down": "sit_down",
-    "standing_up_from_laying": "sufl",
-    "standing_up_from_sitting": "sufs",
-    "upstair": "upstairs"
+    # "downstair": "downstairs",
+    # "sitting_down_from_standing": "sit_down",
+    # "sitting_down": "sit_down",
+    # "standing_up_from_laying": "sufl",
+    # "standing_up_from_sitting": "sufs",
+    # "upstair": "upstairs",
+    # "quick_walk": "fast_walk",
+    # "plugin": "plug_in",
+    # "put_on_floor": "put_on_the_floor"
+    "sit_down": "sitting_down_from_standing",
+    "sufl" : "standing_up_from_laying",
+    "sufs" : "standing_up_from_sitting",
+    "fast_walk": "quick_walk",
+    "plug_in": "plugin",
+    "put_on_the_floor": "put_on_floor",
 }
 
 def rename_activity_folders(main_folder):

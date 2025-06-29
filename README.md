@@ -56,15 +56,14 @@ Can be used to verify duration and total values of collected data after syncing 
 
 ## Complete Sequence of running scripts for preprocessing
 
-    - standardize subject name
-    - standardize activity names
-    - Delete Last Row
-    - Structured Data Code
-    - sync
-    - upstair downstair issue resolution
-    - convert to atomic
-    - rename files
-    - final fixed 4 second atomic activity
+    - 1-standardize subject name
+    - 2-standardize activity names
+    - 3-Delete Last Row
+    - 4-Structured Data Code
+    - 5-convert to atomic
+    - 6-Rename and CSV {Raw Dataset is generated}
+    - 7-delete unwanted files  {Final useable dataset for model AF}
+    - 8-Fall Segmentation {Final Datasets Fall and ADL}
 
 Note: Other files are just used for verification of data. Each file accept the path till base folder which have three devices folders.
 
