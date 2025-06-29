@@ -2,59 +2,7 @@
 
 Here is the complete guide to the files for preprocessing
 
-### Count
-
-This script can be used to count the total number of rows in the files in dataset.
-
-### Hierarchy Viewer
-
-This script can be used to view hierarchy or struture of the folders.
-
-### Plot Sensor Data
-
-This script can be used to plot a single file's data.
-
-### Plot Graphs with Dimension
-
-Notebook to plot sensory data collectively.
-
-### Convert to Atomic
-
-This file can be used to convert 3 minutes activities to 5 seconds events.
-
-### Delete Last Row
-
-Script will delete last row from each file to eliminate last incomplete row.
-
-### Final Fixed 4 second
-
-Notebook can be used to convert events files to json file which can be parsed to ML model for training and testing.
-
-### Structured Data Code
-
-Can be used to change the hierarchy of the folders from collection structure to required structure or hierarchy for conversion to json.
-
-### Sync
-
-Sync script can be used to synchronized data of the files according to late start early finish.
-
-### Verify Data Timestamps
-
-Can be used to verify data timestamps to match events time before syncing and changing hierarchy.
-
-### Verify
-
-Can be used to verify duration and total values of collected data before syncing and changing hierarchy.
-
-### Verify Timestamps Sync Data
-
-Can be used to verify data timestamps to match events time after syncing and changing hierarchy.
-
-### Verify Sync Data
-
-Can be used to verify duration and total values of collected data after syncing and changing hierarchy.
-
-## Complete Sequence of running scripts for preprocessing
+## Complete Sequence of running scripts for preprocessing (Primary)
 
     - 1-standardize subject name
     - 2-standardize activity names
@@ -63,11 +11,35 @@ Can be used to verify duration and total values of collected data after syncing 
     - 5-convert to atomic
     - 6-Rename and CSV {Raw Dataset is generated}
     - 7-delete unwanted files  {Final useable dataset for model AF}
-    - 8-Fall Segmentation {Final Datasets Fall and ADL}
+    - 8-Fall Segmentation {Final Datasets Fall and ADL} 8-alt just copies the data and not delete from source location.
 
-Note: Other files are just used for verification of data. Each file accept the path till base folder which have three devices folders.
+## Fixing Codes
+
+    - fix upstairs can be used if the upstair and downstair events are recorded for 45 seconds
+    - event fixer can be used to fix the event names like event_2_e2.csv or something like e1_e2.csv
+    - sync can be used for data syncing {⚠⚠⚠ extreme loss of data}
+    - rename activities can be used to rename activities if they have any issue in passing the model {this renaming does not maintain activity naming standard}
+
+## Plot Data
+
+    - plot comparison data can be used to plot data of multiple users with a reference of single user
+    - plot multiple events can be used to plot data of users all activities for multiple events
+    - plot sensor data can be used to plot single sensor
+    - plot subject data can be used to plot a single subject
+
+## Sensor Calculations
+
+    - just a try to calculate the gravity from IMUs
+
+## Verify Data
+
+    - couter can be used to get total sensor rates
+    - hierarchy viewer shows all the hierarchy and number of files
+    - other verfication files are self explanatory
 
 ## standard activity names
+
+### 5 seconds activities
 
     - bending
     - walking
