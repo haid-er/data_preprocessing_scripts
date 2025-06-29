@@ -12,6 +12,7 @@ Here is the complete guide to the files for preprocessing
     - 6-Rename and CSV {Raw Dataset is generated}
     - 7-delete unwanted files  {Final useable dataset for model AF}
     - 8-Fall Segmentation {Final Datasets Fall and ADL} 8-alt just copies the data and not delete from source location.
+    - updated in final fixed 5 second atomic (create json)
 
 ## Fixing Codes
 
