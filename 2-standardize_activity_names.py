@@ -39,7 +39,8 @@ STANDARD_ACTIVITIES = [
     "fall_forward_when_trying_to_sit_down",
     "fall_backward_while_trying_to_sit_down",
     "fall_forward_while_trying_to_stand_up",
-    "fall_backward_while_trying_to_stand_up"
+    "fall_backward_while_trying_to_stand_up",
+    "open_lid_by_rotation"
 ]
 
 def standardize_activity_names(base_path):

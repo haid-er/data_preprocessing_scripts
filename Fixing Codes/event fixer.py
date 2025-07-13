@@ -1,12 +1,12 @@
 import os
 
 # Specify the folder path
-folder_path = r'C:\Users\Malik Haider\Documents\NewHumCare\DS_Structured\bsef21m542\downstairs'  # Change this to your actual path
+folder_path = r'C:\Users\Malik Haider\Documents\HUMCARE\DS_AF\sub25\walking'  # Change this to your actual path
 
 # Loop through all files in the folder
 for filename in os.listdir(folder_path):
-    if 'event_' in filename:
-        new_filename = filename.replace('event_', '')
+    if 'e1_' in filename:
+        new_filename = filename.replace('e1_', '')
         old_file_path = os.path.join(folder_path, filename)
         new_file_path = os.path.join(folder_path, new_filename)
         

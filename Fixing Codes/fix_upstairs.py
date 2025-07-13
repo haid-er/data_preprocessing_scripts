@@ -6,9 +6,8 @@ import re
 selected_activities = {"upstairs", "downstairs"}
 
 # Duration threshold in milliseconds
-MIN_DURATION_MS = 10000  # 10 seconds
+MIN_DURATION_MS = 10000   # 10seconds
 EVENT_DURATION_MS = 5000  # 5 seconds
-
 
 def clean_wrong_naming(activity_folder):
     """
