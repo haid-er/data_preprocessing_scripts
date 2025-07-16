@@ -24,7 +24,7 @@ def rename_subfolders_and_generate_csv():
     
     old_new_names = []
     
-    for idx, old_name in enumerate(subfolders, start=77):
+    for idx, old_name in enumerate(subfolders, start=1):
         old_path = os.path.join(parent_folder, old_name)
         new_name = f"sub{idx}"
         new_path = os.path.join(parent_folder, new_name)
