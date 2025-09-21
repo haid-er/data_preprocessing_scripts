@@ -40,7 +40,7 @@ Here is the complete guide to the files for preprocessing
 
 ## standard activity names
 
-### 5 seconds activities
+### all 5 seconds activities and 3 minute activities
 
     - bending
     - walking
